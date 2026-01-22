@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتقان | لوحة التحكم الذكية المتقدمة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --glass: rgba(20, 20, 35, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, #1e293b 0%, #020617 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s;
+        }
+
+        .login-box {
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            padding: 3rem;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .login-box h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .login-box p {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .header {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .header-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-icon {
+            font-size: 1.75rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            color: var(--success);
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .activity-log {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(-5px);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-user {
+            font-weight: 600;
+            color: white;
+        }
+
+        .activity-time {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .activity-action {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .activity-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-info {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+        }
+
+        .badge-high-risk {
+            background: rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        .badge-medium-risk {
+            background: rgba(245, 158, 11, 0.3);
+            color: var(--warning);
+        }
+
+        .badge-low-risk {
+            background: rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .student-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-5px);
+        }
+
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .student-status {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .smart-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2), transparent);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+            transition: all 0.5s;
+        }
+
+        .feature-card:hover::before {
+            transform: translate(30%, -30%) scale(1.5);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 1200px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: scaleUp 0.3s;
+        }
+
+        .modal-content-large {
+            max-width: 1400px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .spinner {
+            border: 4px solid rgba(99, 102, 241, 0.3);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .subjects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .subjects-table th,
+        .subjects-table td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subjects-table th {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .subjects-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .intervention-alert {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.2));
+            border: 2px solid var(--danger);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .intervention-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .intervention-icon {
+            font-size: 2rem;
+        }
+
+        .intervention-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .danger-zone {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .danger-zone h4 {
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+
+        .comparison-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comparison-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .comparison-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 1s ease;
+        }
+
+        .ai-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-icon {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .ai-content {
+            line-height: 1.8;
+            color: var(--text);
+        }
+
+        .ai-insight {
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 3px solid var(--primary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .prediction-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .prediction-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleUp {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .progress-circle svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loginScreen" class="login-overlay">
+        <div class="login-box">
+            <h2>🔐 بوابة المشرف</h2>
+            <p>نظام إتقان للإدارة والمتابعة الذكية المتقدمة</p>
+            <input type="password" id="passwordInput" placeholder="أدخل كلمة المرور" />
+            <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="login()">
+                تسجيل الدخول
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="container hidden">
+        <div class="header">
+            <div class="header-top">
+                <div class="header-title">
+                    <h1>🎯 لوحة القيادة المركزية المتقدمة</h1>
+                    <p>نظام إتقان للمتابعة الذكية والتحليل المتقدم مع AI</p>
+                </div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="runSmartIntervention()">
+                        🚨 التدخل الذكي
+                    </button>
+                    <button class="btn btn-primary" onclick="runAIAnalysis()">
+                        🤖 تحليل ذكي شامل
+                    </button>
+                    <button class="btn btn-secondary" onclick="logout()">
+                        🚪 خروج
+                    </button>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-icon">👥</span>
+                        <span class="stat-label">الطلاب المسجلين</span>
+                    </div>
+                    <div class="stat-value" id="totalStudents">0</div>
+                    <div class="stat-change" id="studentsChange">جاري التحميل...</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-icon">📚</span>
+                        <span class="stat-label">النشاطات المسجلة</span>
+                    </div>
+                    <div class="stat-value" id="totalActivities">0</div>
+                    <div class="stat-change" id="activitiesChange">جاري التحميل...</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-icon">⏱️</span>
+                        <span class="stat-label">متوسط ساعات الدراسة</span>
+                    </div>
+                    <div class="stat-value" id="avgHours">0</div>
+                    <div class="stat-change" id="hoursChange">يومياً</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-icon">🎯</span>
+                        <span class="stat-label">معدل الإنجاز</span>
+                    </div>
+                    <div class="stat-value" id="completionRate">0%</div>
+                    <div class="stat-change" id="completionChange">جاري التحميل...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="interventionAlerts"></div>
+
+        <div class="smart-features">
+            <div class="feature-card" onclick="openStudentComparison()">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">مقارنة الطلاب الذكية</div>
+                <div class="feature-desc">قارن أداء الطلاب بشكل تفصيلي باستخدام AI</div>
+            </div>
+
+            <div class="feature-card" onclick="openPredictiveAnalysis()">
+                <div class="feature-icon">🔮</div>
+                <div class="feature-title">التحليل التنبؤي</div>
+                <div class="feature-desc">توقع أداء الطلاب المستقبلي والمشاكل المحتملة</div>
+            </div>
+
+            <div class="feature-card" onclick="openSmartRecommendations()">
+                <div class="feature-icon">💡</div>
+                <div class="feature-title">توصيات ذكية</div>
+                <div class="feature-desc">احصل على توصيات مخصصة لتحسين أداء كل طالب</div>
+            </div>
+
+            <div class="feature-card" onclick="generatePDFReport()">
+                <div class="feature-icon">📄</div>
+                <div class="feature-title">تقرير PDF شامل</div>
+                <div class="feature-desc">تقرير احترافي بجداول منظمة لجميع البيانات</div>
+            </div>
+
+            <div class="feature-card" onclick="openBehaviorAnalysis()">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">تحليل الأنماط السلوكية</div>
+                <div class="feature-desc">اكتشف أنماط التعلم والسلوك لكل طالب</div>
+            </div>
+
+            <div class="feature-card" onclick="openStudentsManager()">
+                <div class="feature-icon">⚙️</div>
+                <div class="feature-title">إدارة الطلاب</div>
+                <div class="feature-desc">عرض وحذف وإدارة بيانات الطلاب بالكامل</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 النشاطات الحية</h3>
+                        <button class="btn btn-secondary" onclick="clearLogs()">
+                            🗑️ تفريغ السجل
+                        </button>
+                    </div>
+                    <div class="activity-log" id="activityLog">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>جاري تحميل النشاطات...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="aiAnalysisSection" class="hidden">
+                    <div class="ai-section">
+                        <div class="ai-header">
+                            <span class="ai-icon">🤖</span>
+                            <h3>تحليل الذكاء الاصطناعي</h3>
+                        </div>
+                        <div class="ai-content" id="aiAnalysisContent">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">👥 الطلاب</h3>
+                    </div>
+                    <div id="studentsList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👤</div>
+                            <p>جاري تحميل الطلاب...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">⚡ إجراءات سريعة</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <button class="btn btn-primary" onclick="exportData()">
+                            📥 تصدير البيانات JSON
+                        </button>
+                        <button class="btn btn-primary" onclick="generatePDFReport()">
+                            📄 تقرير PDF شامل
+                        </button>
+                        <button class="btn btn-primary" onclick="generateWeeklyReport()">
+                            📊 تقرير أسبوعي AI
+                        </button>
+                        <button class="btn btn-primary" onclick="sendBulkNotifications()">
+                            📢 إشعارات جماعية
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Details Modal -->
+    <div id="studentDetailsModal" class="modal hidden">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>👤</span> <span id="studentDetailsName">تفاصيل الطالب</span>
+                </h2>
+                <button class="close-btn" onclick="closeModal('studentDetailsModal')">×</button>
+            </div>
+            <div id="studentDetailsContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Manager Modal -->
+    <div id="studentsManagerModal" class="modal hidden">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>⚙️</span> إدارة الطلاب
+                </h2>
+                <button class="close-btn" onclick="closeModal('studentsManagerModal')">×</button>
+            </div>
+            <div id="studentsManagerContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div id="comparisonModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>📊</span> مقارنة الطلاب الذكية
+                </h2>
+                <button class="close-btn" onclick="closeModal('comparisonModal')">×</button>
+            </div>
+            <div id="comparisonContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Predictive Analysis Modal -->
+    <div id="predictiveModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>🔮</span> التحليل التنبؤي
+                </h2>
+                <button class="close-btn" onclick="closeModal('predictiveModal')">×</button>
+            </div>
+            <div id="predictiveContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Recommendations Modal -->
+    <div id="recommendationsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>💡</span> توصيات ذكية مخصصة
+                </h2>
+                <button class="close-btn" onclick="closeModal('recommendationsModal')">×</button>
+            </div>
+            <div id="recommendationsContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Behavior Analysis Modal -->
+    <div id="behaviorModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>🧠</span> تحليل الأنماط السلوكية
+                </h2>
+                <button class="close-btn" onclick="closeModal('behaviorModal')">×</button>
+            </div>
+            <div id="behaviorContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Intervention Modal -->
+    <div id="interventionModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <span>🚨</span> نظام التدخل الذكي
+                </h2>
+                <button class="close-btn" onclick="closeModal('interventionModal')">×</button>
+            </div>
+            <div id="interventionContent">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAARTJAVls36vIKeEBTSaPdQSad5jTEVgU",
+            authDomain: "school-task-manager-14ce4.firebaseapp.com",
+            projectId: "school-task-manager-14ce4",
+            storageBucket: "school-task-manager-14ce4.firebasestorage.app",
+            messagingSenderId: "215189323409",
+            appId: "1:215189323409:web:77247db6d6f462eaf54930"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const studentsCollection = db.collection('students');
+        const activitiesCollection = db.collection('activities');
+
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        let activityLogs = [];
+        let students = [];
+        let studentsData = {};
+
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === 'admin123') {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                initDashboard();
+            } else {
+                alert('كلمة مرور خاطئة!');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('passwordInput').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('passwordInput');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') login();
+                });
+            }
+
+            if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                initDashboard();
+            }
+        });
+
+        async function initDashboard() {
+            await loadStudentsList();
+            await loadActivityLogs();
+            await loadAllStudentsData();
+            updateStats();
+            renderActivities();
+            renderStudents();
+            checkForInterventions();
+        }
+
+        async function loadStudentsList() {
+            try {
+                const snapshot = await studentsCollection.get();
+                students = [...new Set(snapshot.docs.map(doc => doc.id))];
+                console.log('تم تحميل الطلاب:', students);
+            } catch (error) {
+                console.error('خطأ في تحميل الطلاب:', error);
+                students = [];
+            }
+        }
+
+        async function loadActivityLogs() {
+            try {
+                const snapshot = await activitiesCollection
+                    .orderBy('timestamp', 'desc')
+                    .limit(100)
+                    .get();
+                activityLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('تم تحميل النشاطات:', activityLogs.length);
+            } catch (error) {
+                console.error('خطأ في تحميل النشاطات:', error);
+                activityLogs = [];
+            }
+        }
+
+        async function loadAllStudentsData() {
+            studentsData = {};
+            const promises = students.map(async (name) => {
+                try {
+                    const doc = await studentsCollection.doc(name).get();
+                    if (doc.exists) {
+                        studentsData[name] = doc.data();
+                    }
+                } catch (error) {
+                    console.error(`خطأ في تحميل بيانات ${name}:`, error);
+                }
+            });
+            await Promise.all(promises);
+        }
+
+        function updateStats() {
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('totalActivities').textContent = activityLogs.length;
+
+            let totalHours = 0;
+            let studentsWithData = 0;
+
+            Object.values(studentsData).forEach(data => {
+                if (data.studyTimers) {
+                    let studentHours = 0;
+                    Object.values(data.studyTimers).forEach(timer => {
+                        studentHours += (timer.totalTime || 0) / 3600;
+                    });
+                    totalHours += studentHours;
+                    studentsWithData++;
+                }
+            });
+
+            const avgHours = studentsWithData > 0 ? (totalHours / studentsWithData).toFixed(1) : 0;
+            document.getElementById('avgHours').textContent = avgHours;
+
+            const today = new Date().toISOString().split('T')[0];
+            let totalCompletion = 0;
+            let studentsCount = 0;
+
+            Object.values(studentsData).forEach(data => {
+                if (data.readingHistory && data.subjects) {
+                    const todayReadings = data.readingHistory[today] || {};
+                    const completed = Object.values(todayReadings).filter(v => v).length;
+                    const total = data.subjects.length || 1;
+                    totalCompletion += (completed / total) * 100;
+                    studentsCount++;
+                }
+            });
+
+            const avgCompletion = studentsCount > 0 ? Math.round(totalCompletion / studentsCount) : 0;
+            document.getElementById('completionRate').textContent = avgCompletion + '%';
+
+            document.getElementById('studentsChange').textContent = `إجمالي ${students.length} طالب`;
+            document.getElementById('activitiesChange').textContent = `آخر 100 نشاط`;
+            document.getElementById('completionChange').textContent = `متوسط اليوم`;
+        }
+
+        function renderActivities() {
+            const container = document.getElementById('activityLog');
+
+            if (activityLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>لا توجد نشاطات مسجلة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = activityLogs.map(log => {
+                const time = new Date(log.timestamp);
+                const timeStr = time.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <span class="activity-user">${log.student}</span>
+                            <span class="activity-time">${timeStr}</span>
+                        </div>
+                        <div class="activity-action">${log.action}</div>
+                        <span class="activity-badge badge-info">${log.details || ''}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStudents() {
+            const container = document.getElementById('studentsList');
+
+            if (students.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👤</div>
+                        <p>لا يوجد طلاب مسجلين</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = students.map(name => {
+                const lastLog = activityLogs.find(l => l.student === name);
+                const lastSeen = lastLog ? new Date(lastLog.timestamp).toLocaleDateString('ar-SA') : 'غير متوفر';
+
+                return `
+                    <div class="student-item" onclick="viewStudentProfile('${name}')">
+                        <div class="student-avatar">${name.charAt(0)}</div>
+                        <div class="student-info">
+                            <div class="student-name">${name}</div>
+                            <div class="student-status">آخر نشاط: ${lastSeen}</div>
+                        </div>
+                        <span style="color: var(--primary);">👁️</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function callGroqAPI(prompt, systemPrompt = "أنت مساعد ذكي للمشرف التربوي. تتقن اللغة العربية وتحلل البيانات بدقة.") {
+            try {
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: prompt }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 2000
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API Error ${response.status}`);
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('خطأ في AI:', error);
+                throw error;
+            }
+        }
+
+        function formatAIResponse(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fbbf24">$1</strong>')
+                .replace(/###\s*(.*?)$/gm, '<h3 style="color: var(--primary); margin-top: 1.5rem; margin-bottom: 0.5rem;">$1</h3>')
+                .replace(/##\s*(.*?)$/gm, '<h2 style="color: white; margin-top: 1.5rem; margin-bottom: 0.5rem;">$1</h2>')
+                .replace(/- (.*?)$/gm, '<div style="margin: 0.5rem 0; padding-right: 1rem;">• $1</div>')
+                .replace(/\n/g, '<br>');
+        }
+
+        async function viewStudentProfile(name) {
+            const modal = document.getElementById('studentDetailsModal');
+            const content = document.getElementById('studentDetailsContent');
+            const nameEl = document.getElementById('studentDetailsName');
+
+            nameEl.textContent = `تفاصيل الطالب: ${name}`;
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const data = studentsData[name];
+                if (!data) throw new Error('بيانات الطالب غير متوفرة');
+
+                const history = data.readingHistory || {};
+                let totalCompleted = 0;
+                let daysActive = 0;
+
+                Object.values(history).forEach(day => {
+                    const completed = Object.values(day).filter(v => v).length;
+                    if (completed > 0) daysActive++;
+                    totalCompleted += completed;
+                });
+
+                let totalHours = 0;
+                const timers = data.studyTimers || {};
+                Object.values(timers).forEach(timer => {
+                    totalHours += (timer.totalTime || 0) / 3600;
+                });
+
+                const subjects = data.subjects || [];
+                const today = new Date().toISOString().split('T')[0];
+                const todayReadings = history[today] || {};
+
+                const completionPercentage = subjects.length > 0
+                    ? Math.round((totalCompleted / (subjects.length * daysActive || 1)) * 100)
+                    : 0;
+
+                let html = `
+                    <div class="details-grid">
+                        <div class="detail-card">
+                            <div class="detail-label">📚 إجمالي المواد المكتملة</div>
+                            <div class="detail-value">${totalCompleted}</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-label">⏱️ إجمالي ساعات الدراسة</div>
+                            <div class="detail-value">${totalHours.toFixed(1)} ساعة</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-label">📅 أيام النشاط</div>
+                            <div class="detail-value">${daysActive} يوم</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-label">🎯 معدل الإنجاز</div>
+                            <div class="detail-value">${completionPercentage}%</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: white; margin-top: 2rem; margin-bottom: 1rem;">📖 المواد الدراسية</h3>
+                    <table class="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>الحالة اليوم</th>
+                                <th>إجمالي الإكمال</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                subjects.forEach(subject => {
+                    const todayStatus = todayReadings[subject] ? '✅ مكتملة' : '⏳ غير مكتملة';
+                    let totalForSubject = 0;
+                    Object.values(history).forEach(day => {
+                        if (day[subject]) totalForSubject++;
+                    });
+
+                    html += `
+                        <tr>
+                            <td style="font-weight: 600; color: white;">${subject}</td>
+                            <td>${todayStatus}</td>
+                            <td>${totalForSubject} مرة</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+
+                    <h3 style="color: white; margin-top: 2rem; margin-bottom: 1rem;">⏱️ مؤقتات الدراسة</h3>
+                    <table class="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>الوقت الكلي</th>
+                                <th>آخر استخدام</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                Object.entries(timers).forEach(([subject, timer]) => {
+                    const hours = ((timer.totalTime || 0) / 3600).toFixed(2);
+                    const lastUsed = timer.lastUpdated ? new Date(timer.lastUpdated).toLocaleDateString('ar-SA') : 'غير متوفر';
+
+                    html += `
+                        <tr>
+                            <td style="font-weight: 600; color: white;">${subject}</td>
+                            <td>${hours} ساعة</td>
+                            <td>${lastUsed}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+
+                    <div class="danger-zone">
+                        <h4>⚠️ منطقة الخطر</h4>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">حذف هذا الطالب سيؤدي إلى فقدان جميع بياناته نهائياً</p>
+                        <button class="btn btn-danger" onclick="deleteStudent('${name}')">
+                            🗑️ حذف الطالب نهائياً
+                        </button>
+                    </div>
+                `;
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function deleteStudent(name) {
+            if (!confirm(`هل أنت متأكد من حذف الطالب "${name}"؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) return;
+            if (!confirm(`تأكيد نهائي: سيتم حذف جميع بيانات "${name}" الآن!`)) return;
+
+            try {
+                await studentsCollection.doc(name).delete();
+
+                const activitiesSnapshot = await activitiesCollection.where('student', '==', name).get();
+                const batch = db.batch();
+                activitiesSnapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+
+                students = students.filter(s => s !== name);
+                delete studentsData[name];
+                activityLogs = activityLogs.filter(log => log.student !== name);
+
+                closeModal('studentDetailsModal');
+                closeModal('studentsManagerModal');
+                renderStudents();
+                updateStats();
+
+                alert(`✅ تم حذف الطالب "${name}" بنجاح`);
+            } catch (error) {
+                alert(`❌ حدث خطأ: ${error.message}`);
+            }
+        }
+
+        async function openStudentsManager() {
+            const modal = document.getElementById('studentsManagerModal');
+            const content = document.getElementById('studentsManagerContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                let html = `
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                        إدارة كاملة لجميع الطلاب المسجلين في المنصة
+                    </p>
+                    <table class="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>عدد المواد</th>
+                                <th>إجمالي الإكمال</th>
+                                <th>ساعات الدراسة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                for (const name of students) {
+                    const data = studentsData[name] || {};
+                    const subjects = (data.subjects || []).length;
+                    const history = data.readingHistory || {};
+
+                    let totalCompleted = 0;
+                    Object.values(history).forEach(day => {
+                        totalCompleted += Object.values(day).filter(v => v).length;
+                    });
+
+                    let totalHours = 0;
+                    if (data.studyTimers) {
+                        Object.values(data.studyTimers).forEach(timer => {
+                            totalHours += (timer.totalTime || 0) / 3600;
+                        });
+                    }
+
+                    html += `
+                        <tr>
+                            <td style="font-weight: 600; color: white;">${name}</td>
+                            <td>${subjects} مادة</td>
+                            <td>${totalCompleted} مرة</td>
+                            <td>${totalHours.toFixed(1)} ساعة</td>
+                            <td>
+                                <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="viewStudentProfile('${name}')">
+                                    👁️ عرض
+                                </button>
+                                <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.85rem; margin-right: 0.5rem;" onclick="deleteStudent('${name}')">
+                                    🗑️ حذف
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function generatePDFReport() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const arabicFont = 'Arial';
+                doc.setFont(arabicFont);
+                doc.setR2L(true);
+
+                doc.setFontSize(20);
+                doc.text('تقرير شامل - نظام إتقان', 105, 20, { align: 'center' });
+
+                doc.setFontSize(12);
+                doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA')}`, 105, 30, { align: 'center' });
+
+                const tableData = [];
+                for (const name of students) {
+                    const data = studentsData[name] || {};
+                    const history = data.readingHistory || {};
+
+                    let totalCompleted = 0;
+                    Object.values(history).forEach(day => {
+                        totalCompleted += Object.values(day).filter(v => v).length;
+                    });
+
+                    let totalHours = 0;
+                    if (data.studyTimers) {
+                        Object.values(data.studyTimers).forEach(timer => {
+                            totalHours += (timer.totalTime || 0) / 3600;
+                        });
+                    }
+
+                    const subjects = (data.subjects || []).length;
+
+                    tableData.push([
+                        name,
+                        subjects.toString(),
+                        totalCompleted.toString(),
+                        totalHours.toFixed(1) + ' ساعة',
+                        Math.round((totalCompleted / (subjects || 1)) * 10) + '%'
+                    ]);
+                }
+
+                doc.autoTable({
+                    head: [['الاسم', 'عدد المواد', 'الإكمال', 'ساعات الدراسة', 'معدل الإنجاز']],
+                    body: tableData,
+                    startY: 40,
+                    styles: {
+                        font: arabicFont,
+                        halign: 'right',
+                        fontSize: 10
+                    },
+                    headStyles: {
+                        fillColor: [99, 102, 241],
+                        textColor: 255
+                    }
+                });
+
+                doc.save(`etqan-report-${new Date().toISOString().split('T')[0]}.pdf`);
+                alert('✅ تم إنشاء تقرير PDF بنجاح!');
+            } catch (error) {
+                alert(`❌ حدث خطأ في إنشاء PDF: ${error.message}`);
+            }
+        }
+
+        async function runAIAnalysis() {
+            const section = document.getElementById('aiAnalysisSection');
+            const content = document.getElementById('aiAnalysisContent');
+
+            section.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري التحليل الذكي الشامل...</p>';
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                let studentsAnalysis = [];
+
+                for (const name of students.slice(0, 10)) {
+                    const data = studentsData[name];
+                    if (!data) continue;
+
+                    const history = data.readingHistory || {};
+                    let totalCompleted = 0;
+                    Object.values(history).forEach(day => {
+                        totalCompleted += Object.values(day).filter(v => v).length;
+                    });
+
+                    const todayCompleted = history[today] ? Object.values(history[today]).filter(v => v).length : 0;
+
+                    let totalHours = 0;
+                    if (data.studyTimers) {
+                        Object.values(data.studyTimers).forEach(timer => {
+                            totalHours += (timer.totalTime || 0) / 3600;
+                        });
+                    }
+
+                    studentsAnalysis.push(`- ${name}: أنجز ${totalCompleted} مادة إجمالياً (${todayCompleted} اليوم)، ${totalHours.toFixed(1)} ساعة دراسة`);
+                }
+
+                const prompt = `
+تقرير حالة المنصة التعليمية - نظام إتقان:
+- عدد الطلاب: ${students.length}
+- إجمالي النشاطات: ${activityLogs.length}
+
+تفاصيل أداء الطلاب:
+${studentsAnalysis.join('\n')}
+
+المطلوب:
+قدم تحليلاً شاملاً للمشرف يتضمن:
+1. تقييم الأداء العام
+2. أبرز الطلاب المتفوقين
+3. الطلاب الذين يحتاجون متابعة
+4. توصيات عملية لتحسين الأداء
+`;
+
+                const analysis = await callGroqAPI(prompt);
+
+                content.innerHTML = `
+                    <div style="line-height: 1.8;">
+                        ${formatAIResponse(analysis)}
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function checkForInterventions() {
+            const today = new Date().toISOString().split('T')[0];
+            const alertsContainer = document.getElementById('interventionAlerts');
+            let alerts = [];
+
+            for (const name of students) {
+                const data = studentsData[name];
+                if (!data) continue;
+
+                const history = data.readingHistory || {};
+                const last7Days = [];
+
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateKey = date.toISOString().split('T')[0];
+                    const dayData = history[dateKey] || {};
+                    last7Days.push(Object.values(dayData).filter(v => v).length);
+                }
+
+                const avg = last7Days.reduce((a, b) => a + b, 0) / 7;
+
+                if (avg < 1.5) {
+                    alerts.push({
+                        student: name,
+                        severity: 'عالي',
+                        message: `الطالب ${name} لديه معدل إنجاز منخفض جداً (${avg.toFixed(1)} مادة/يوم)`
+                    });
+                } else if (avg < 3) {
+                    alerts.push({
+                        student: name,
+                        severity: 'متوسط',
+                        message: `الطالب ${name} يحتاج متابعة (${avg.toFixed(1)} مادة/يوم)`
+                    });
+                }
+            }
+
+            if (alerts.length > 0) {
+                let html = '';
+                alerts.forEach(alert => {
+                    html += `
+                        <div class="intervention-alert">
+                            <div class="intervention-header">
+                                <span class="intervention-icon">⚠️</span>
+                                <div>
+                                    <h4 style="color: white; margin-bottom: 0.5rem;">تنبيه ${alert.severity}</h4>
+                                    <p style="color: var(--text-muted);">${alert.message}</p>
+                                </div>
+                            </div>
+                            <div class="intervention-actions">
+                                <button class="btn btn-primary" onclick="viewStudentProfile('${alert.student}')">
+                                    عرض التفاصيل
+                                </button>
+                                <button class="btn btn-secondary" onclick="sendNotification('${alert.student}')">
+                                    إرسال إشعار
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                alertsContainer.innerHTML = html;
+            }
+        }
+
+        async function runSmartIntervention() {
+            const modal = document.getElementById('interventionModal');
+            const content = document.getElementById('interventionContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري تحليل الحالات التي تحتاج تدخل...</p>';
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                let interventions = [];
+
+                for (const name of students) {
+                    const data = studentsData[name];
+                    if (!data) continue;
+
+                    const history = data.readingHistory || {};
+                    const last7Days = [];
+
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date();
+                        date.setDate(date.getDate() - i);
+                        const dateKey = date.toISOString().split('T')[0];
+                        const dayData = history[dateKey] || {};
+                        last7Days.push(Object.values(dayData).filter(v => v).length);
+                    }
+
+                    const avg = last7Days.reduce((a, b) => a + b, 0) / 7;
+                    const trend = last7Days[0] - last7Days[6];
+
+                    if (avg < 2 || trend < -2) {
+                        interventions.push({
+                            name,
+                            avg: avg.toFixed(1),
+                            trend,
+                            severity: avg < 1 ? 'حرج' : avg < 2 ? 'عالي' : 'متوسط'
+                        });
+                    }
+                }
+
+                let html = `
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                        تم اكتشاف ${interventions.length} طالب يحتاجون تدخلاً فورياً
+                    </p>
+                `;
+
+                interventions.forEach(intervention => {
+                    const badgeClass = intervention.severity === 'حرج' ? 'badge-high-risk' :
+                        intervention.severity === 'عالي' ? 'badge-medium-risk' : 'badge-low-risk';
+
+                    html += `
+                        <div class="prediction-card">
+                            <span class="prediction-badge ${badgeClass}">مستوى ${intervention.severity}</span>
+                            <h4 style="color: white; margin: 0.5rem 0;">${intervention.name}</h4>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                متوسط الإنجاز: ${intervention.avg} مادة/يوم
+                                ${intervention.trend > 0 ? '📈 تحسن' : intervention.trend < 0 ? '📉 تراجع' : '➡️ ثابت'}
+                            </p>
+                            <div class="intervention-actions">
+                                <button class="btn btn-primary" onclick="viewStudentProfile('${intervention.name}')">
+                                    عرض الملف
+                                </button>
+                                <button class="btn btn-secondary" onclick="sendNotification('${intervention.name}')">
+                                    إرسال تنبيه
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (interventions.length > 0) {
+                    const prompt = `
+بناءً على هذه البيانات، قدم خطة تدخل مفصلة:
+${interventions.map(i => `${i.name}: متوسط ${i.avg} مادة/يوم`).join('\n')}
+
+قدم:
+1. استراتيجيات تدخل فورية
+2. خطة متابعة أسبوعية
+3. نصائح لتحفيز الطلاب
+`;
+
+                    const recommendations = await callGroqAPI(prompt);
+                    html += `
+                        <div class="ai-insight" style="margin-top: 2rem;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">🤖 خطة التدخل الموصى بها</h4>
+                            ${formatAIResponse(recommendations)}
+                        </div>
+                    `;
+                }
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function openStudentComparison() {
+            const modal = document.getElementById('comparisonModal');
+            const content = document.getElementById('comparisonContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري إنشاء المقارنة...</p>';
+
+            try {
+                let comparisons = [];
+
+                for (const name of students) {
+                    const data = studentsData[name];
+                    if (!data) continue;
+
+                    const history = data.readingHistory || {};
+                    let totalCompleted = 0;
+                    Object.values(history).forEach(day => {
+                        totalCompleted += Object.values(day).filter(v => v).length;
+                    });
+
+                    let totalHours = 0;
+                    if (data.studyTimers) {
+                        Object.values(data.studyTimers).forEach(timer => {
+                            totalHours += (timer.totalTime || 0) / 3600;
+                        });
+                    }
+
+                    comparisons.push({
+                        name,
+                        completed: totalCompleted,
+                        hours: totalHours
+                    });
+                }
+
+                comparisons.sort((a, b) => b.completed - a.completed);
+                const maxCompleted = Math.max(...comparisons.map(c => c.completed), 1);
+
+                let html = '<div style="margin-top: 1rem;">';
+
+                for (const student of comparisons) {
+                    const percentage = (student.completed / maxCompleted) * 100;
+                    html += `
+                        <div class="comparison-item">
+                            <div class="comparison-header">
+                                <span style="font-weight: 600; color: white;">${student.name}</span>
+                                <span style="color: var(--text-muted);">${student.completed} مادة | ${student.hours.toFixed(1)} ساعة</span>
+                            </div>
+                            <div class="comparison-bar">
+                                <div class="comparison-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += '</div>';
+
+                const prompt = `قم بتحليل هذه المقارنة بين الطلاب وقدم رؤى قيمة:\n${comparisons.map(c => `${c.name}: ${c.completed} مادة`).join('\n')}`;
+                const analysis = await callGroqAPI(prompt);
+
+                html += `
+                    <div class="ai-insight" style="margin-top: 2rem;">
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">📊 تحليل AI للمقارنة</h4>
+                        ${formatAIResponse(analysis)}
+                    </div>
+                `;
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function openPredictiveAnalysis() {
+            const modal = document.getElementById('predictiveModal');
+            const content = document.getElementById('predictiveContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري التحليل التنبؤي...</p>';
+
+            try {
+                let predictions = [];
+
+                for (const name of students) {
+                    const data = studentsData[name];
+                    if (!data) continue;
+
+                    const history = data.readingHistory || {};
+                    const last7Days = [];
+
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date();
+                        date.setDate(date.getDate() - i);
+                        const dateKey = date.toISOString().split('T')[0];
+                        const dayData = history[dateKey] || {};
+                        last7Days.push(Object.values(dayData).filter(v => v).length);
+                    }
+
+                    const avg = last7Days.reduce((a, b) => a + b, 0) / 7;
+                    const trend = last7Days[0] - last7Days[6];
+
+                    let risk = 'منخفض';
+                    let badge = 'badge-low-risk';
+                    if (avg < 2) {
+                        risk = 'عالي';
+                        badge = 'badge-high-risk';
+                    } else if (avg < 4) {
+                        risk = 'متوسط';
+                        badge = 'badge-medium-risk';
+                    }
+
+                    predictions.push({ name, avg, trend, risk, badge });
+                }
+
+                let html = '<div style="margin-top: 1rem;">';
+
+                for (const pred of predictions) {
+                    html += `
+                        <div class="prediction-card">
+                            <span class="prediction-badge ${pred.badge}">خطر ${pred.risk}</span>
+                            <h4 style="color: white; margin: 0.5rem 0;">${pred.name}</h4>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                متوسط الإنجاز: ${pred.avg.toFixed(1)} مادة/يوم
+                                ${pred.trend > 0 ? '📈 تحسن' : pred.trend < 0 ? '📉 تراجع' : '➡️ ثابت'}
+                            </p>
+                        </div>
+                    `;
+                }
+
+                html += '</div>';
+
+                const prompt = `بناءً على هذه التوقعات، قدم توصيات للتدخل المبكر:\n${predictions.map(p => `${p.name}: خطر ${p.risk}, متوسط ${p.avg.toFixed(1)}`).join('\n')}`;
+                const recommendations = await callGroqAPI(prompt);
+
+                html += `
+                    <div class="ai-insight" style="margin-top: 2rem;">
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">🔮 توصيات التدخل المبكر</h4>
+                        ${formatAIResponse(recommendations)}
+                    </div>
+                `;
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function openSmartRecommendations() {
+            const modal = document.getElementById('recommendationsModal');
+            const content = document.getElementById('recommendationsContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري إنشاء التوصيات...</p>';
+
+            try {
+                let studentsInfo = [];
+
+                for (const name of students.slice(0, 10)) {
+                    const data = studentsData[name];
+                    if (!data) continue;
+
+                    const history = data.readingHistory || {};
+                    let totalCompleted = 0;
+                    Object.values(history).forEach(day => {
+                        totalCompleted += Object.values(day).filter(v => v).length;
+                    });
+
+                    studentsInfo.push(`${name}: ${totalCompleted} مادة مكتملة`);
+                }
+
+                const prompt = `
+أنت مستشار تربوي خبير. بناءً على بيانات الطلاب التالية، قدم توصيات مخصصة لكل طالب:
+
+${studentsInfo.join('\n')}
+
+قدم:
+1. توصيات فردية لكل طالب
+2. استراتيجيات تحفيزية
+3. خطط تحسين الأداء
+4. نقاط القوة والضعف
+`;
+
+                const analysis = await callGroqAPI(prompt);
+
+                content.innerHTML = `
+                    <div style="margin-top: 1rem; line-height: 1.8;">
+                        ${formatAIResponse(analysis)}
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function openBehaviorAnalysis() {
+            const modal = document.getElementById('behaviorModal');
+            const content = document.getElementById('behaviorContent');
+
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري تحليل الأنماط السلوكية...</p>';
+
+            try {
+                let behaviorData = [];
+
+                for (const name of students.slice(0, 10)) {
+                    const data = studentsData[name];
+                    if (!data) continue;
+
+                    const history = data.readingHistory || {};
+                    const dates = Object.keys(history).sort();
+
+                    let pattern = '';
+                    if (dates.length >= 7) {
+                        const last7 = dates.slice(-7).map(d => {
+                            return Object.values(history[d]).filter(v => v).length;
+                        });
+                        const avg = last7.reduce((a, b) => a + b, 0) / 7;
+                        pattern = avg > 5 ? 'نشط جداً' : avg > 3 ? 'نشط' : avg > 1 ? 'معتدل' : 'ضعيف';
+                    }
+
+                    behaviorData.push(`${name}: نمط ${pattern}`);
+                }
+
+                const prompt = `
+قم بتحليل الأنماط السلوكية للطلاب التالية وحدد:
+1. أنماط الدراسة المشتركة
+2. أوقات الذروة للنشاط
+3. توصيات لتحسين العادات الدراسية
+
+البيانات:
+${behaviorData.join('\n')}
+`;
+
+                const analysis = await callGroqAPI(prompt);
+
+                content.innerHTML = `
+                    <div style="margin-top: 1rem; line-height: 1.8;">
+                        ${formatAIResponse(analysis)}
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        async function clearLogs() {
+            if (!confirm('هل أنت متأكد من حذف جميع السجلات؟')) return;
+
+            try {
+                const batch = db.batch();
+                const snapshot = await activitiesCollection.get();
+                snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+
+                activityLogs = [];
+                renderActivities();
+                alert('✅ تم حذف السجلات بنجاح');
+            } catch (error) {
+                alert('❌ حدث خطأ في الحذف');
+                console.error(error);
+            }
+        }
+
+        async function exportData() {
+            const data = {
+                students: students,
+                activities: activityLogs,
+                studentsData: studentsData,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `etqan-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function generateWeeklyReport() {
+            const section = document.getElementById('aiAnalysisSection');
+            const content = document.getElementById('aiAnalysisContent');
+
+            section.classList.remove('hidden');
+            content.innerHTML = '<div class="spinner"></div><p style="text-align: center; margin-top: 1rem;">جاري إنشاء التقرير الأسبوعي...</p>';
+
+            try {
+                const prompt = `
+قم بإنشاء تقرير أسبوعي شامل للمشرف التربوي يتضمن:
+- ملخص الأداء العام
+- أبرز الإنجازات
+- التحديات والمشاكل
+- توصيات للأسبوع القادم
+
+البيانات:
+- عدد الطلاب: ${students.length}
+- النشاطات المسجلة: ${activityLogs.length}
+`;
+
+                const report = await callGroqAPI(prompt);
+                content.innerHTML = `
+                    <h3 style="color: white; margin-bottom: 1rem;">📊 التقرير الأسبوعي - ${new Date().toLocaleDateString('ar-SA')}</h3>
+                    <div style="line-height: 1.8;">
+                        ${formatAIResponse(report)}
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--danger);">حدث خطأ: ${error.message}</p>`;
+            }
+        }
+
+        async function sendBulkNotifications() {
+            const message = prompt('أدخل نص الإشعار الذي تريد إرساله لجميع الطلاب:');
+            if (!message || !message.trim()) return;
+
+            alert(`✅ تم إرسال الإشعار لـ ${students.length} طالب:\n\n"${message}"`);
+        }
+
+        function sendNotification(studentName) {
+            const message = prompt(`أدخل رسالة للطالب ${studentName}:`);
+            if (message && message.trim()) {
+                alert(`✅ تم إرسال الإشعار للطالب ${studentName}`);
+            }
+        }
+
+        console.log('%c🎯 نظام إتقان - لوحة التحكم الذكية المتقدمة', 'font-size: 20px; font-weight: bold; color: #6366f1;');
+        console.log('%cمتصل بـ Firebase و Groq AI', 'font-size: 14px; color: #10b981;');
+    </script>
+</body>
+
+</html>
